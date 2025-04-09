@@ -1,0 +1,36 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_HUB_CREDENTIALS = credentials('docker-hub')
+        BACKEND_IMAGE = "jagmitra/my-backend"
+        FRONTEND_IMAGE = "jagmitra/my-frontend"
+    }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git branch: 'main', url: 'https://github.com/jagmitra/MYDEV.git'
+            }
+        }
+
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    sh "kubectl apply -f k8s/backend-deployment.yaml"
+                    sh "kubectl apply -f k8s/frontend-deployment.yaml"
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Pipeline executed successfully!"
+        }
+        failure {
+            echo "Pipeline failed. Check logs!"
+        }
+    }
+}
